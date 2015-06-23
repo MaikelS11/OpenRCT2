@@ -1404,10 +1404,10 @@ int track_place_maze(sint16 x, sint16 y, sint16 z, uint8 rideIndex, uint8** trac
 				bl = 1;
 				if (RCT2_GLOBAL(0x00F440D4, uint8) == 4)bl = 0x69;
 				if (RCT2_GLOBAL(0x00F440D4, uint8) == 1){
-					cost = game_do_command(mapCoord.x, 0 | rotation << 8, mapCoord.y, (z / 16) & 0xFF, GAME_COMMAND_12, -1, 0);
+					cost = game_do_command(mapCoord.x, 0 | rotation << 8, mapCoord.y, (z / 16) & 0xFF, GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT, -1, 0);
 				}
 				else{
-					cost = game_do_command(mapCoord.x, bl | rotation << 8, mapCoord.y, rideIndex, GAME_COMMAND_12, 0, 0);
+					cost = game_do_command(mapCoord.x, bl | rotation << 8, mapCoord.y, rideIndex, GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT, 0, 0);
 				}
 				if (cost != MONEY32_UNDEFINED){
 					RCT2_GLOBAL(0x00F4414E, uint8) |= (1 << 0);
@@ -1423,10 +1423,10 @@ int track_place_maze(sint16 x, sint16 y, sint16 z, uint8 rideIndex, uint8** trac
 				bl = 1;
 				if (RCT2_GLOBAL(0x00F440D4, uint8) == 4)bl = 0x69;
 				if (RCT2_GLOBAL(0x00F440D4, uint8) == 1){
-					cost = game_do_command(mapCoord.x, 0 | rotation << 8, mapCoord.y, ((z / 16) & 0xFF) | (1 << 8), GAME_COMMAND_12, -1, 0);
+					cost = game_do_command(mapCoord.x, 0 | rotation << 8, mapCoord.y, ((z / 16) & 0xFF) | (1 << 8), GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT, -1, 0);
 				}
 				else{
-					cost = game_do_command(mapCoord.x, bl | rotation << 8, mapCoord.y, rideIndex | (1 << 8), GAME_COMMAND_12, 0, 0);
+					cost = game_do_command(mapCoord.x, bl | rotation << 8, mapCoord.y, rideIndex | (1 << 8), GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT, 0, 0);
 				}
 				if (cost != MONEY32_UNDEFINED){
 					RCT2_GLOBAL(0x00F4414E, uint8) |= (1 << 0);
@@ -1588,7 +1588,7 @@ int track_place_ride(sint16 x, sint16 y, sint16 z, uint8 rideIndex, uint8** trac
 			temp_z += trackBlock->z;
 			// rotation in bh
 			// track_type in dl
-			game_do_command(x, 0x69 | ((rotation & 3) << 8), y, track_type, GAME_COMMAND_4, temp_z, 0);
+			game_do_command(x, 0x69 | ((rotation & 3) << 8), y, track_type, GAME_COMMAND_REMOVE_TRACK, temp_z, 0);
 		}
 
 		if (RCT2_GLOBAL(0x00F440D4, uint8) == 1 ||
@@ -1616,7 +1616,7 @@ int track_place_ride(sint16 x, sint16 y, sint16 z, uint8 rideIndex, uint8** trac
 			if (RCT2_GLOBAL(0x00F440D4, uint8) == 1)bl = 0;
 
 			RCT2_GLOBAL(0x00141E9AE, rct_string_id) = 927;
-			money32 cost = game_do_command(x, bl | (rotation << 8), y, edx, GAME_COMMAND_3, edi, 0);
+			money32 cost = game_do_command(x, bl | (rotation << 8), y, edx, GAME_COMMAND_PLACE_TRACK, edi, 0);
 			RCT2_GLOBAL(0x00F440D5, money32) += cost;
 
 			if (cost == MONEY32_UNDEFINED){
@@ -1822,7 +1822,7 @@ int track_place_ride(sint16 x, sint16 y, sint16 z, uint8 rideIndex, uint8** trac
 					if (RCT2_GLOBAL(0x00F440D4, uint8) == 1)bl = 0;
 
 					RCT2_GLOBAL(0x00141E9AE, rct_string_id) = 927;
-					money32 cost = game_do_command(x, bl | (rotation << 8), y, rideIndex | (is_exit << 8), GAME_COMMAND_12, di, 0);
+					money32 cost = game_do_command(x, bl | (rotation << 8), y, rideIndex | (is_exit << 8), GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT, di, 0);
 					RCT2_GLOBAL(0x00F440D5, money32) += cost;
 
 					if (cost == MONEY32_UNDEFINED){
@@ -1841,7 +1841,7 @@ int track_place_ride(sint16 x, sint16 y, sint16 z, uint8 rideIndex, uint8** trac
 				z /= 16;
 
 				RCT2_GLOBAL(0x00141E9AE, rct_string_id) = 927;
-				money32 cost = game_do_command(x, 0 | (rotation << 8), y, z | (is_exit << 8), GAME_COMMAND_12, -1, 0);
+				money32 cost = game_do_command(x, 0 | (rotation << 8), y, z | (is_exit << 8), GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT, -1, 0);
 				RCT2_GLOBAL(0x00F440D5, money32) += cost;
 
 				if (cost == MONEY32_UNDEFINED){

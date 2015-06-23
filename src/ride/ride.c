@@ -1011,7 +1011,7 @@ void sub_6C96C0()
 			41,
 			RCT2_GLOBAL(0x00F440C1, uint16),
 			_currentRideIndex,
-			GAME_COMMAND_13,
+			GAME_COMMAND_REMOVE_RIDE_ENTRANCE_OR_EXIT,
 			RCT2_GLOBAL(0x00F440C4, uint8),
 			0
 		);
@@ -1045,7 +1045,7 @@ void sub_6C96C0()
 					105 | ((direction & 3) << 8),
 					y,
 					trackElement->properties.track.type | ((trackElement->properties.track.sequence & 0x0F) << 8),
-					GAME_COMMAND_4,
+					GAME_COMMAND_REMOVE_TRACK,
 					z,
 					0
 				);
@@ -1262,7 +1262,7 @@ static int ride_modify_entrance_or_exit(rct_map_element *mapElement, int x, int 
 		RCT2_GLOBAL(RCT2_ADDRESS_MAP_SELECTION_FLAGS, uint16) &= ~2;
 	} else {
 		// Remove entrance / exit
-		game_do_command(x, 9, y, rideIndex, GAME_COMMAND_13, bl, 0);
+		game_do_command(x, 9, y, rideIndex, GAME_COMMAND_REMOVE_RIDE_ENTRANCE_OR_EXIT, bl, 0);
 		RCT2_GLOBAL(RCT2_ADDRESS_TOOL_WIDGETINDEX, uint16) = entranceType == ENTRANCE_TYPE_RIDE_ENTRANCE ? 29 : 30;
 		RCT2_GLOBAL(0x00F44191, uint8) = entranceType;
 	}
@@ -4295,7 +4295,7 @@ int ride_get_refund_price(int ride_id)
 					}else{
 						edx |= 0xFF << 8;
 						edx &= ((map_element->properties.track.sequence & 0xF) << 8) | 0xFF;
-						RCT2_GLOBAL(0x00F4413A, int) += game_do_command_p(GAME_COMMAND_4, &eax, &ebx, &ecx, &edx, &esi, &edi, &ebp);
+						RCT2_GLOBAL(0x00F4413A, int) += game_do_command_p(GAME_COMMAND_REMOVE_TRACK, &eax, &ebx, &ecx, &edx, &esi, &edi, &ebp);
 					}
 					y -= 32;
 					break;
@@ -4798,5 +4798,28 @@ bool ride_select_forwards_from_back()
 money32 ride_remove_track_piece(int x, int y, int z, int direction, int type)
 {
 	RCT2_GLOBAL(RCT2_ADDRESS_GAME_COMMAND_ERROR_TITLE, rct_string_id) = STR_RIDE_CONSTRUCTION_CANT_REMOVE_THIS;
-	return game_do_command(x, (GAME_COMMAND_FLAG_APPLY) | ((direction & 3) << 8), y, type, GAME_COMMAND_4, z, 0);
+	return game_do_command(x, (GAME_COMMAND_FLAG_APPLY) | ((direction & 3) << 8), y, type, GAME_COMMAND_REMOVE_TRACK, z, 0);
+}
+
+/**
+ *
+ * rct2: 0x006B58EF
+ */
+bool ride_are_all_possible_entrances_and_exits_built(rct_ride *ride)
+{
+	if (ride_type_has_flag(ride->type, RIDE_TYPE_FLAG_IS_SHOP))
+		return true;
+	
+	for (int i = 0; i < 4; i++) {
+		if (ride->station_starts[i] == 0xFFFF) continue;
+		if (ride->entrances[i] == 0xFFFF) {
+			RCT2_GLOBAL(RCT2_ADDRESS_GAME_COMMAND_ERROR_TEXT, rct_string_id) = STR_ENTRANCE_NOT_YET_BUILT;
+			return false;
+		}
+		if (ride->exits[i] == 0xFFFF) {
+			RCT2_GLOBAL(RCT2_ADDRESS_GAME_COMMAND_ERROR_TEXT, rct_string_id) = STR_EXIT_NOT_YET_BUILT;
+			return false;
+		}
+	}
+	return true;
 }

@@ -19,6 +19,7 @@
  *****************************************************************************/
 
 #include "../addresses.h"
+#include "../audio/audio.h"
 #include "../drawing/drawing.h"
 #include "../game.h"
 #include "../input.h"
@@ -186,6 +187,7 @@ static void window_ride_construction_mousedown(int widgetIndex, rct_window *w, r
 static void window_ride_construction_dropdown();
 static void window_ride_construction_update(rct_window *w);
 static void window_ride_construction_toolupdate();
+static void window_ride_construction_tooldown();
 static void window_ride_construction_invalidate();
 static void window_ride_construction_paint();
 
@@ -237,7 +239,7 @@ static void* window_ride_construction_events[] = {
 	window_ride_construction_emptysub,
 	window_ride_construction_emptysub,
 	window_ride_construction_toolupdate,
-	(void*)0x006C8248,
+	window_ride_construction_tooldown,
 	window_ride_construction_emptysub,
 	window_ride_construction_emptysub,
 	window_ride_construction_emptysub,
@@ -1396,8 +1398,6 @@ static void window_ride_construction_toolupdate()
 
 	switch (widgetIndex) {
 	case WIDX_CONSTRUCT:
-		// RCT2_CALLPROC_X(0x006CC6A8, screenX, screenY, 0, widgetIndex, (int)w, 0, 0); return;
-
 		map_invalidate_map_selection_tiles();
 		RCT2_GLOBAL(RCT2_ADDRESS_MAP_SELECTION_FLAGS, uint16) &= ~(1 | 2 | 4);
 		if (!ride_get_place_position_from_screen_position(screenX, screenY, &x, &y)) {
@@ -1544,6 +1544,74 @@ static void window_ride_construction_toolupdate()
 				_currentRideIndex, x, y, direction, RCT2_GLOBAL(0x00F44191, uint8), unk
 			);
 			sub_6C84CE();
+		}
+		break;
+	}
+}
+
+/**
+ * 
+ *  rct2: 0x006C8248
+ */
+static void window_ride_construction_tooldown()
+{
+	short x, y;
+	short widgetIndex;
+	rct_window *w;
+
+	window_tool_get_registers(w, widgetIndex, x, y);
+
+	switch (widgetIndex) {
+	case WIDX_CONSTRUCT:
+		RCT2_CALLPROC_X(0x006CCA73, x, y, 0, WIDX_CONSTRUCT, (int)w, 0, 0);
+		break;
+	case WIDX_ENTRANCE:
+	case WIDX_EXIT:
+		sub_6C9627();
+		map_invalidate_selection_rect();
+		RCT2_GLOBAL(RCT2_ADDRESS_MAP_SELECTION_FLAGS, uint16) &= ~(1 | 4);
+
+		int mapX, mapY, direction;
+		ride_get_entrance_or_exit_position_from_screen_position(x, y, &mapX, &mapY, &direction);
+		if (RCT2_GLOBAL(0x00F44194, uint8) == 255)
+			break;
+
+		RCT2_GLOBAL(RCT2_ADDRESS_GAME_COMMAND_ERROR_TITLE, uint16) = (RCT2_GLOBAL(0x00F44191, uint8) == 0) ?
+			STR_CANT_BUILD_MOVE_ENTRANCE_FOR_THIS_RIDE_ATTRACTION :
+			STR_CANT_BUILD_MOVE_EXIT_FOR_THIS_RIDE_ATTRACTION;
+
+		money32 cost = game_do_command(
+			RCT2_GLOBAL(0x00F44188, uint16),
+			(GAME_COMMAND_FLAG_APPLY) | ((RCT2_GLOBAL(0x00F44194, uint8) ^ 2) << 8),
+			RCT2_GLOBAL(0x00F4418A, uint16),
+			RCT2_GLOBAL(0x00F44192, uint8) | (RCT2_GLOBAL(0x00F44191, uint8) << 8),
+			GAME_COMMAND_PLACE_RIDE_ENTRANCE_OR_EXIT,
+			RCT2_GLOBAL(0x00F44193, uint8),
+			0
+		);
+		if (cost == MONEY32_UNDEFINED) {
+			break;
+		}
+
+		sound_play_panned(
+			SOUND_PLACE_ITEM,
+			0x8001,
+			RCT2_GLOBAL(0x009DEA5E, uint16),
+			RCT2_GLOBAL(0x009DEA60, uint16),
+			RCT2_GLOBAL(0x009DEA62, uint16)
+		);
+
+		rct_ride *ride = GET_RIDE(RCT2_GLOBAL(0x00F44192, uint8));
+		if (ride_are_all_possible_entrances_and_exits_built(ride)) {
+			tool_cancel();
+			if (ride_type_has_flag(ride->type, RIDE_TYPE_FLAG_15)) {
+				window_close(w);
+			}
+		} else {
+			RCT2_GLOBAL(0x00F44191, uint8) ^= 1;
+			window_invalidate_by_class(77);
+			RCT2_GLOBAL(RCT2_ADDRESS_TOOL_WIDGETINDEX, uint16) = (RCT2_GLOBAL(0x00F44191, uint8) == 0) ?
+				WIDX_ENTRANCE : WIDX_EXIT;
 		}
 		break;
 	}
@@ -2002,7 +2070,7 @@ money32 sub_6CA162(int rideIndex, int trackType, int trackDirection, int edxRS16
 
 		return result;
 	} else {
-		result = game_do_command(x, 105 | (trackDirection << 8), y, rideIndex | (trackType << 8) | (edxRS16 << 16), GAME_COMMAND_3, z, 0);
+		result = game_do_command(x, 105 | (trackDirection << 8), y, rideIndex | (trackType << 8) | (edxRS16 << 16), GAME_COMMAND_PLACE_TRACK, z, 0);
 		if (result == MONEY32_UNDEFINED)
 			return result;
 
