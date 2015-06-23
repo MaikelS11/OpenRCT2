@@ -1004,8 +1004,8 @@ void sub_6C96C0()
 	rct_map_element *trackElement;
 	int rideIndex, x, y, z, direction;
 
-	if (RCT2_GLOBAL(0x00F440B0, uint8) & 4) {
-		RCT2_GLOBAL(0x00F440B0, uint8) &= ~4;
+	if (_currentTrackSelectionFlags & 4) {
+		_currentTrackSelectionFlags &= ~4;
 		game_do_command(
 			RCT2_GLOBAL(0x00F440BF, uint16),
 			41,
@@ -1016,8 +1016,8 @@ void sub_6C96C0()
 			0
 		);
 	}
-	if (RCT2_GLOBAL(0x00F440B0, uint8) & 2) {
-		RCT2_GLOBAL(0x00F440B0, uint8) &= ~2;
+	if (_currentTrackSelectionFlags & 2) {
+		_currentTrackSelectionFlags &= ~2;
 
 		rideIndex = _currentRideIndex;
 		RCT2_GLOBAL(0x00F441D2, uint8) = rideIndex;
@@ -1060,9 +1060,9 @@ void sub_6C9627()
 
 	switch (_rideConstructionState) {
 	case RIDE_CONSTRUCTION_STATE_SELECTED:
-		x = _currentTrackPieceX;
-		y = _currentTrackPieceY;
-		z = _currentTrackPieceZ;
+		x = _currentTrackBeginX;
+		y = _currentTrackBeginY;
+		z = _currentTrackBeginZ;
 		sub_6C683D(
 			&x,
 			&y,
@@ -1077,19 +1077,19 @@ void sub_6C9627()
 	case RIDE_CONSTRUCTION_STATE_6:
 	case RIDE_CONSTRUCTION_STATE_7:
 	case RIDE_CONSTRUCTION_STATE_8:
-		if (RCT2_GLOBAL(0x00F440B0, uint8) & 1) {
+		if (_currentTrackSelectionFlags & 1) {
 			map_invalidate_tile_full(
-				_currentTrackPieceX & 0xFFE0,
-				_currentTrackPieceY & 0xFFE0
+				_currentTrackBeginX & 0xFFE0,
+				_currentTrackBeginY & 0xFFE0
 			);
 			RCT2_GLOBAL(RCT2_ADDRESS_MAP_SELECTION_FLAGS, uint16) &= ~4;
 		}
 		break;
 	default:
-		if (RCT2_GLOBAL(0x00F440B0, uint8) & 1) {
-			RCT2_GLOBAL(0x00F440B0, uint8) &= ~1;
+		if (_currentTrackSelectionFlags & 1) {
+			_currentTrackSelectionFlags &= ~1;
 			RCT2_GLOBAL(RCT2_ADDRESS_MAP_SELECTION_FLAGS, uint8) &= ~4;
-			map_invalidate_tile_full(_currentTrackPieceX, _currentTrackPieceY);
+			map_invalidate_tile_full(_currentTrackBeginX, _currentTrackBeginY);
 		}
 		sub_6C96C0();
 		break;
@@ -1117,9 +1117,9 @@ void ride_select_next_section()
 
 	if (_rideConstructionState == RIDE_CONSTRUCTION_STATE_SELECTED) {
 		sub_6C9627();
-		x = _currentTrackPieceX;
-		y = _currentTrackPieceY;
-		z = _currentTrackPieceZ;
+		x = _currentTrackBeginX;
+		y = _currentTrackBeginY;
+		z = _currentTrackBeginZ;
 		direction = _currentTrackPieceDirection;
 		type = _currentTrackPieceType;
 		if (sub_6C683D(&x, &y, &z, direction & 3, type, 0, &mapElement, 0)) {
@@ -1136,24 +1136,24 @@ void ride_select_next_section()
 			mapElement = outputElement.element;
 		} else {
 			_rideConstructionState = RIDE_CONSTRUCTION_STATE_FRONT;
-			_currentTrackPieceX = outputElement.x;
-			_currentTrackPieceY = outputElement.y;
-			_currentTrackPieceZ = z;
+			_currentTrackBeginX = outputElement.x;
+			_currentTrackBeginY = outputElement.y;
+			_currentTrackBeginZ = z;
 			_currentTrackPieceDirection = direction;
 			_currentTrackPieceType = mapElement->properties.track.type;
-			RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+			_currentTrackSelectionFlags = 0;
 			_rideConstructionArrowPulseTime = 0;
 			sub_6C9800();
 			sub_6C84CE();
 			return;
 		}
 
-		_currentTrackPieceX = x;
-		_currentTrackPieceY = y;
-		_currentTrackPieceZ = z;
+		_currentTrackBeginX = x;
+		_currentTrackBeginY = y;
+		_currentTrackBeginZ = z;
 		_currentTrackPieceDirection = (mapElement->type & MAP_ELEMENT_DIRECTION_MASK);
 		_currentTrackPieceType = mapElement->properties.track.type;
-		RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+		_currentTrackSelectionFlags = 0;
 		_rideConstructionArrowPulseTime = 0;
 		sub_6C84CE();
 	} else if (_rideConstructionState == RIDE_CONSTRUCTION_STATE_BACK) {
@@ -1175,9 +1175,9 @@ void ride_select_previous_section()
 
 	if (_rideConstructionState == RIDE_CONSTRUCTION_STATE_SELECTED) {
 		sub_6C9627();
-		x = _currentTrackPieceX;
-		y = _currentTrackPieceY;
-		z = _currentTrackPieceZ;
+		x = _currentTrackBeginX;
+		y = _currentTrackBeginY;
+		z = _currentTrackBeginZ;
 		direction = _currentTrackPieceDirection;
 		type = _currentTrackPieceType;
 		if (sub_6C683D(&x, &y, &z, direction & 3, type, 0, &mapElement, 0)) {
@@ -1186,22 +1186,22 @@ void ride_select_previous_section()
 			return;
 		}
 		if (track_get_previous(x, y, mapElement, &trackBeginEnd)) {
-			_currentTrackPieceX = trackBeginEnd.begin_x;
-			_currentTrackPieceY = trackBeginEnd.begin_y;
-			_currentTrackPieceZ = trackBeginEnd.begin_z;
+			_currentTrackBeginX = trackBeginEnd.begin_x;
+			_currentTrackBeginY = trackBeginEnd.begin_y;
+			_currentTrackBeginZ = trackBeginEnd.begin_z;
 			_currentTrackPieceDirection = trackBeginEnd.begin_direction;
 			_currentTrackPieceType = trackBeginEnd.begin_element->properties.track.type;
-			RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+			_currentTrackSelectionFlags = 0;
 			_rideConstructionArrowPulseTime = 0;
 			sub_6C84CE();
 		} else {
 			_rideConstructionState = RIDE_CONSTRUCTION_STATE_BACK;
-			_currentTrackPieceX = trackBeginEnd.end_x;
-			_currentTrackPieceY = trackBeginEnd.end_y;
-			_currentTrackPieceZ = trackBeginEnd.begin_z;
+			_currentTrackBeginX = trackBeginEnd.end_x;
+			_currentTrackBeginY = trackBeginEnd.end_y;
+			_currentTrackBeginZ = trackBeginEnd.begin_z;
 			_currentTrackPieceDirection = trackBeginEnd.end_direction;
 			_currentTrackPieceType = mapElement->properties.track.type;
-			RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+			_currentTrackSelectionFlags = 0;
 			_rideConstructionArrowPulseTime = 0;
 			sub_6C9800();
 			sub_6C84CE();
@@ -1279,10 +1279,10 @@ int ride_modify_maze(rct_map_element *mapElement, int x, int y)
 {
 	_currentRideIndex = mapElement->properties.track.ride_index;
 	_rideConstructionState = RIDE_CONSTRUCTION_STATE_6;
-	_currentTrackPieceX = x;
-	_currentTrackPieceY = y;
-	_currentTrackPieceZ = mapElement->base_height * 8;
-	RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+	_currentTrackBeginX = x;
+	_currentTrackBeginY = y;
+	_currentTrackBeginZ = mapElement->base_height * 8;
+	_currentTrackSelectionFlags = 0;
 	_rideConstructionArrowPulseTime = 0;
 	RCT2_CALLPROC_X(0x006CD887, 0, 0, 0, 0, 0, 0, 0);
 	return 1;
@@ -1348,12 +1348,12 @@ int ride_modify(rct_xy_element *input)
 
 	_currentRideIndex = rideIndex;
 	_rideConstructionState = RIDE_CONSTRUCTION_STATE_SELECTED;
-	_currentTrackPieceX = x;
-	_currentTrackPieceY = y;
-	_currentTrackPieceZ = z;
+	_currentTrackBeginX = x;
+	_currentTrackBeginY = y;
+	_currentTrackBeginZ = z;
 	_currentTrackPieceDirection = direction;
 	_currentTrackPieceType = type;
-	RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+	_currentTrackSelectionFlags = 0;
 	_rideConstructionArrowPulseTime = 0;
 
 	if (ride_type_has_flag(ride->type, RIDE_TYPE_FLAG_15)) {
@@ -1368,24 +1368,24 @@ int ride_modify(rct_xy_element *input)
 	}
 
 	_rideConstructionState = RIDE_CONSTRUCTION_STATE_SELECTED;
-	_currentTrackPieceX = x;
-	_currentTrackPieceY = y;
-	_currentTrackPieceZ = z;
+	_currentTrackBeginX = x;
+	_currentTrackBeginY = y;
+	_currentTrackBeginZ = z;
 	_currentTrackPieceDirection = direction;
 	_currentTrackPieceType = type;
-	RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+	_currentTrackSelectionFlags = 0;
 	_rideConstructionArrowPulseTime = 0;
 
 	ride_select_previous_section();
 
 	if (_rideConstructionState != RIDE_CONSTRUCTION_STATE_BACK) {
 		_rideConstructionState = RIDE_CONSTRUCTION_STATE_SELECTED;
-		_currentTrackPieceX = x;
-		_currentTrackPieceY = y;
-		_currentTrackPieceZ = z;
+		_currentTrackBeginX = x;
+		_currentTrackBeginY = y;
+		_currentTrackBeginZ = z;
 		_currentTrackPieceDirection = direction;
 		_currentTrackPieceType = type;
-		RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+		_currentTrackSelectionFlags = 0;
 		_rideConstructionArrowPulseTime = 0;
 	}
 
@@ -1418,10 +1418,10 @@ int sub_6CC3FB(int rideIndex)
 
 	ride = GET_RIDE(_currentRideIndex);
 
-	_previousTrackPieceSlope = RCT2_ADDRESS(0x0097CC68, uint8)[ride->type * 2] | 0x100;
-	RCT2_GLOBAL(0x00F440B2, uint8) = 0;
+	_currentTrackCurve = RCT2_ADDRESS(0x0097CC68, uint8)[ride->type * 2] | 0x100;
+	_currentTrackSlopeEnd = 0;
 	RCT2_GLOBAL(0x00F440B3, uint8) = 0;
-	RCT2_GLOBAL(0x00F440B4, uint8) = 0;
+	_currentTrackLiftHill = 0;
 	RCT2_GLOBAL(0x00F440B5, uint8) = 0;
 
 	if (RCT2_GLOBAL(0x0097D4F2 + (ride->type * 8), uint16) & 0x8000)
@@ -1432,7 +1432,7 @@ int sub_6CC3FB(int rideIndex)
 
 	_currentTrackPieceDirection = 0;
 	_rideConstructionState = RIDE_CONSTRUCTION_STATE_PLACE;
-	RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+	_currentTrackSelectionFlags = 0;
 	_rideConstructionArrowPulseTime = 0;
 	RCT2_GLOBAL(0x00F44159, uint8) = 0;
 	RCT2_GLOBAL(0x00F4415C, uint8) = 0;
@@ -4752,14 +4752,14 @@ bool ride_select_backwards_from_front()
 
 	sub_6C9627();
 	RCT2_GLOBAL(0x00F441D2, uint8) = _currentRideIndex;
-	if (sub_6C63D6(_currentTrackPieceX, _currentTrackPieceY, _currentTrackPieceZ, _currentTrackPieceDirection, &trackBeginEnd)) {
+	if (sub_6C63D6(_currentTrackBeginX, _currentTrackBeginY, _currentTrackBeginZ, _currentTrackPieceDirection, &trackBeginEnd)) {
 		_rideConstructionState = RIDE_CONSTRUCTION_STATE_SELECTED;
-		_currentTrackPieceX = trackBeginEnd.begin_x;
-		_currentTrackPieceY = trackBeginEnd.begin_y;
-		_currentTrackPieceZ = trackBeginEnd.begin_z;
+		_currentTrackBeginX = trackBeginEnd.begin_x;
+		_currentTrackBeginY = trackBeginEnd.begin_y;
+		_currentTrackBeginZ = trackBeginEnd.begin_z;
 		_currentTrackPieceDirection = trackBeginEnd.begin_direction;
 		_currentTrackPieceType = trackBeginEnd.begin_element->properties.track.type;
-		RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+		_currentTrackSelectionFlags = 0;
 		_rideConstructionArrowPulseTime = 0;
 		return true;
 	} else {
@@ -4775,19 +4775,19 @@ bool ride_select_forwards_from_back()
 	sub_6C9627();
 	RCT2_GLOBAL(0x00F441D2, uint8) = _currentRideIndex;
 
-	x = _currentTrackPieceX;
-	y = _currentTrackPieceY;
-	z = _currentTrackPieceZ;
+	x = _currentTrackBeginX;
+	y = _currentTrackBeginY;
+	z = _currentTrackBeginZ;
 	direction = _currentTrackPieceDirection ^ 2;
 	mapElement = sub_6C6096(&x, &y, &z, &direction, NULL);
 	if (mapElement != NULL) {
 		_rideConstructionState = RIDE_CONSTRUCTION_STATE_SELECTED;
-		_currentTrackPieceX = x;
-		_currentTrackPieceY = y;
-		_currentTrackPieceZ = z;
+		_currentTrackBeginX = x;
+		_currentTrackBeginY = y;
+		_currentTrackBeginZ = z;
 		_currentTrackPieceDirection = (mapElement->type & MAP_ELEMENT_DIRECTION_MASK);
 		_currentTrackPieceType = mapElement->properties.track.type;
-		RCT2_GLOBAL(0x00F440B0, uint8) = 0;
+		_currentTrackSelectionFlags = 0;
 		_rideConstructionArrowPulseTime = 0;
 		return true;
 	} else {

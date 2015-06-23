@@ -807,26 +807,28 @@ extern const uint8 gRideClassifications[255];
 #define _numCurrentPossibleRideConfigurations		RCT2_GLOBAL(0x00F44078, uint16)
 #define _numCurrentPossibleSpecialTrackPieces		RCT2_GLOBAL(0x00F4407A, uint16)
 
-#define _previousTrackPieceSlope					RCT2_GLOBAL(0x00F440A0, uint16)
-
+#define _currentTrackCurve							RCT2_GLOBAL(0x00F440A0, uint16)
+#define _currentTrackEndX							RCT2_GLOBAL(0x00F440A2, uint16)
+#define _currentTrackEndY							RCT2_GLOBAL(0x00F440A4, uint16)
 #define _rideConstructionState						RCT2_GLOBAL(0x00F440A6, uint8)
 #define _currentRideIndex							RCT2_GLOBAL(0x00F440A7, uint8)
-#define _currentTrackPieceX							RCT2_GLOBAL(0x00F440A8, uint16)
-#define _currentTrackPieceY							RCT2_GLOBAL(0x00F440AA, uint16)
-#define _currentTrackPieceZ							RCT2_GLOBAL(0x00F440AC, uint16)
+#define _currentTrackBeginX							RCT2_GLOBAL(0x00F440A8, uint16)
+#define _currentTrackBeginY							RCT2_GLOBAL(0x00F440AA, uint16)
+#define _currentTrackBeginZ							RCT2_GLOBAL(0x00F440AC, uint16)
 #define _currentTrackPieceDirection					RCT2_GLOBAL(0x00F440AE, uint8)
 #define _currentTrackPieceType						RCT2_GLOBAL(0x00F440AF, uint8)
+#define _currentTrackSelectionFlags					RCT2_GLOBAL(0x00F440B0, uint8)
+#define _rideConstructionArrowPulseTime				RCT2_GLOBAL(0x00F440B1, sint8)
+#define _currentTrackSlopeEnd						RCT2_GLOBAL(0x00F440B2, uint8)
+#define _currentTrackBankEnd						RCT2_GLOBAL(0x00F440B3, uint8)
+#define _currentTrackLiftHill						RCT2_GLOBAL(0x00F440B4, uint8)
+
+#define _previousTrackBankEnd						RCT2_GLOBAL(0x00F440B6, uint8)
+#define _previousTrackSlopeEnd						RCT2_GLOBAL(0x00F440B7, uint8)
 
 #define _previousTrackPieceX						RCT2_GLOBAL(0x00F440B9, uint16)
 #define _previousTrackPieceY						RCT2_GLOBAL(0x00F440BB, uint16)
 #define _previousTrackPieceZ						RCT2_GLOBAL(0x00F440BD, uint16)
-
-#define _rideConstructionArrowPulseTime				RCT2_GLOBAL(0x00F440B1, sint8)
-
-#define _previousTrackBankStart						RCT2_GLOBAL(0x00F440B3, uint8)
-
-#define _previousTrackBankEnd						RCT2_GLOBAL(0x00F440B6, uint8)
-#define _previousTrackSlopeEnd						RCT2_GLOBAL(0x00F440B7, uint8)
 
 #define _currentSeatRotationAngle					RCT2_GLOBAL(0x00F440CF, uint8)
 
